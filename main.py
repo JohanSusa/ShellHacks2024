@@ -22,5 +22,6 @@ model = genai.GenerativeModel("gemini-1.5-flash")
 response = model.generate_content("How to beat my social anxiety?")
 st.write(response.text)
 
+
 # write statement below in terminal to run web app
 # streamlit run main.py
