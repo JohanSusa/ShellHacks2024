@@ -1,12 +1,11 @@
-import os
 import streamlit as st
 import google.generativeai as genai
 
-# Load the Gemini API key from environment variables for security
+#API key "AIzaSyCyXkpduy3uFH_gQdJBMJO4pR2ZV3dVDQw"
 genai.configure(api_key="AIzaSyCyXkpduy3uFH_gQdJBMJO4pR2ZV3dVDQw")
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Questions and their corresponding slider labels
+# Questions and their corresponding button labels
 questions = {
     "How do you feel when meeting new people?": ["Very uncomfortable", "Uncomfortable", "Neutral", "Comfortable", "Very comfortable"],
     "How do you feel about speaking in front of others or giving a presentation?": ["Very uncomfortable", "Uncomfortable", "Neutral", "Comfortable", "Very comfortable"],
@@ -31,6 +30,7 @@ if "current_question_index" not in st.session_state:
     st.session_state.current_question_index = 0
 
 # Function to get a response from the Gemini API using generative AI
+#hours spend 2
 def get_gemini_response(score):
     try:
         prompt = ""
@@ -45,77 +45,91 @@ def get_gemini_response(score):
         else:
             prompt = "Give me a random 1-2 sentence social challenge for someone with no social anxiety."
 
-        system_instructions = """You are an AI assistant helping people overcome social anxiety through exposure therapy. 
-        The user will provide their score on a social skills assessment ranging from 10 (low) to 50 (high).
-        Based on their score, provide a suitable social challenge that is safe, clear, and promotes skill-building. 
-        Tailor the challenge to the user's skill level. 
-        Ensure the challenge is achievable but slightly pushes their boundaries to encourage growth."""
-
-        # Fetch response from the API using the correct method (generate or chat)
-
+        # Fetch response from the API
+        #hours spend (3)
         response = model.generate_content(prompt)
-
-        # response = genai.generate(
-        #     model="gemini-1.5-flash",
-        #     prompt=prompt,
-        #     system_instructions=system_instructions
-        # )
-
         return response.text
     except Exception as e:
         st.error(f"Error fetching challenge: {e}")
         return "Could not retrieve a challenge. Please try again later."
 
-st.title("Your Social Challenge Journey")
-# Streamlit app layout
+# Add custom CSS for button styling
+st.markdown("""
+    <style>
+    .button-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;  /* Adjust the gap between buttons */
+        justify-content: center;
+    }
+    .styled-button {
+        padding: 12px 24px;  /* Slightly increase padding to make buttons wider */
+        font-size: 16px;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s, color 0.3s;
+    }
+    .styled-button:hover {
+        background-color: #4CAF50; /* Change to desired hover color */
+        color: white;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
-# Show progress bar
+st.title("Your Social Challenge Journey")
+
+# progress bar
 progress = st.progress(st.session_state.current_question_index / len(questions))
 
-# Assessment section (one question at a time)
-if st.session_state.current_question_index < len(questions):
-    current_question, options = list(questions.items())[st.session_state.current_question_index]
+# Function to handle button clicks and update the score & question index
+def handle_button_click(option):
+    score = questions[current_question].index(option) + 1
+    st.session_state.score += score
+    st.session_state.current_question_index += 1
 
-    # Chat-like interaction
-    with st.chat_message("assistant"):
-        st.markdown(current_question)
+# Assessment and Challenge sections combined into one main area
+#hours spend (4)
+with st.container():  # Enclose both sections in a single container
 
-    # Get user's response using radio buttons
-    with st.chat_message("user"):
-        selected_option = st.radio("", options, index=2, key=f"question_{st.session_state.current_question_index}")
+    if st.session_state.current_question_index < len(questions):
+        current_question, options = list(questions.items())[st.session_state.current_question_index]
 
-    col1, col2 = st.columns([1, 1])
-    with col1:
-        if st.button("Previous") and st.session_state.current_question_index > 0:
-            st.session_state.current_question_index -= 1
-            st.session_state.score -= options.index(selected_option) + 1  # Adjust score when moving back
-    with col2:
-        if st.button("Next"):
-            score = options.index(selected_option) + 1
-            st.session_state.score += score
-            st.session_state.current_question_index += 1
+        # Chat-like interaction
+        with st.chat_message("assistant"):
+            st.markdown(current_question)
 
-# Challenge section (after all questions are answered)
-elif st.session_state.current_question_index >= len(questions):
-    score = st.session_state.score
-    st.write(f"Your social skills score: {score}")
+        # Button interaction with callback
+        with st.chat_message("user"):
+            cols = st.columns([1] * len(options))
+            for i, option in enumerate(options):
+                with cols[i]:
+                    st.button(option, key=f"button_{option}", on_click=handle_button_click, args=(option,))
 
-    # Get or generate a new challenge
-    if st.session_state.current_challenge is None:
-        with st.spinner('Fetching your challenge...'):
-            st.session_state.current_challenge = get_gemini_response(score)
+    elif st.session_state.current_question_index >= len(questions):
+        score = st.session_state.score
+        st.write(f"Your social skills score: {score}")
 
-    st.subheader("Today's Challenge:")
-    st.write(st.session_state.current_challenge)
+        # Get or generate a new challenge
+        if st.session_state.current_challenge is None:
+            with st.spinner('Fetching your challenge...'):
+                st.session_state.current_challenge = get_gemini_response(score)
 
-    if st.button("Mark as Complete"):
-        st.session_state.completed_challenges.append(st.session_state.current_challenge)
-        st.session_state.current_challenge = None
+        st.subheader("Today's Challenge:")
+        st.write(st.session_state.current_challenge)
 
-    st.subheader("Completed Challenges:")
-    st.write(st.session_state.completed_challenges)
+        if st.button("Mark as Complete"):
+            st.session_state.completed_challenges.append(st.session_state.current_challenge)
+            st.session_state.current_challenge = None
 
-# Option to restart the quiz
+            # Fetch a new challenge immediately
+            with st.spinner('Fetching a new challenge...'):
+                st.session_state.current_challenge = get_gemini_response(st.session_state.score)
+
+        st.subheader("Completed Challenges:")
+        st.write(st.session_state.completed_challenges)
+
+# restart the quiz (outside the main container)
 if st.button("Restart"):
     st.session_state.score = 0
     st.session_state.completed_challenges = []
