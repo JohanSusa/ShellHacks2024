@@ -39,3 +39,10 @@ Libraries:
 streamlit for UI components
 pandas for progress tracking and challenge data handling
 Custom CSS for styling the interface
+
+#IMPORTANT USE streamlit run main.py TO RUN THE WEB APP 
+#MUST HAVE streamlit USE pip install streamlit 
+# MUST pip install -q -U google-generativeai
+
+
+
