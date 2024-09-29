@@ -227,5 +227,3 @@ if st.button("Restart"):
     st.session_state.completed_challenges = []
     st.session_state.current_challenge = None
     st.session_state.current_question_index = 0
-
-#
