@@ -55,26 +55,75 @@ def get_gemini_response(score):
 
 # Add custom CSS for button styling
 st.markdown("""
-    <style>
-    .button-container {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;  /* Adjust the gap between buttons */
-        justify-content: center;
+   <style>
+/* Button Container Styling */
+.stButton, .button-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center; /* Center the buttons horizontally */
+    gap: 1rem; /* Space between buttons */
+    margin-bottom: 20px; /* Add spacing below the buttons */
+}
+
+/* Button Styling */
+.stButton button, .styled-button {
+    padding: 14px 24px; /* Increased padding for a more substantial button */
+    font-size: 16px;
+    font-weight: 500; /* Slightly thicker font for better readability */
+    border: none;
+    border-radius: 8px; /* Softer corner radius for modern look */
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease; /* Smooth transition and slight animation */
+    width: calc(100% / 5 - 1rem); /* 5 buttons per row with dynamic resizing */
+    min-width: 150px; /* Minimum width to prevent too small buttons */
+    max-width: 200px; /* Max width for larger screens */
+    box-sizing: border-box;
+    background-color: #f5f5f5; /* Light background for neutral look */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    height:100px;
+}
+
+/* Button Hover Effect */
+.stButton button:hover, .styled-button:hover {
+    background-color: #4CAF50; /* Highlight color on hover */
+    color: #fff; /* Text color change */
+    transform: scale(1.05); /* Slight zoom effect */
+    box-shadow: 0 6px 12px rgba(76, 175, 80, 0.4); /* More prominent shadow on hover */
+}
+
+/* Active Button Effect */
+.stButton button:active, .styled-button:active {
+    transform: scale(1); /* Reset zoom on click */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Reduced shadow on click */
+}
+
+
+
+/* Main Content Area Styling */
+.main .block-container {
+    max-width: 1000px; /* Increase max width for larger screens */
+    padding: 2rem 1.5rem; /* Adjust padding for better spacing */
+    margin: 0 auto; /* Center the main content */
+    background-color: #f9f9f9; /* Light background for main area */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Light shadow for main content */
+}
+
+/* Responsive Button Styling */
+@media (max-width: 768px) {
+    .stButton button, .styled-button {
+        width: calc(100% / 2 - 1rem); /* 2 buttons per row on smaller screens */
+        min-width: 120px; /* Adjust minimum width for smaller screens */
     }
-    .styled-button {
-        padding: 12px 24px;  /* Slightly increase padding to make buttons wider */
-        font-size: 16px;
-        border: none;
-        border-radius: 5px;
-        cursor: pointer;
-        transition: background-color 0.3s, color 0.3s;
+}
+
+@media (max-width: 480px) {
+    .stButton button, .styled-button {
+        width: 100%; /* Full-width buttons on extra small screens */
+        margin-bottom: 10px; /* Space between full-width buttons */
     }
-    .styled-button:hover {
-        background-color: #4CAF50; /* Change to desired hover color */
-        color: white;
-    }
-    </style>
+}
+</style>
 """, unsafe_allow_html=True)
 
 st.title("Your Social Challenge Journey")
@@ -82,11 +131,13 @@ st.title("Your Social Challenge Journey")
 # progress bar
 progress = st.progress(st.session_state.current_question_index / len(questions))
 
+
 # Function to handle button clicks and update the score & question index
 def handle_button_click(option):
     score = questions[current_question].index(option) + 1
     st.session_state.score += score
     st.session_state.current_question_index += 1
+
 
 # Assessment and Challenge sections combined into one main area
 #hours spend (4)
