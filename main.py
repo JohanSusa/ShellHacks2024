@@ -246,3 +246,4 @@ with col2:
         setattr(st.session_state, "num_challenges", 0),
         setattr(st.session_state, "challenges", [])
     ), key="restart_button")
+#test
